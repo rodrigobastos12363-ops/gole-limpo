@@ -3,1206 +3,254 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Gole Limpo - Troque o Vape por Água</title>
+  <title>Gole Limpo</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Phosphor Icons para ícones limpos e modernos -->
-  <script src="https://unpkg.com/@phosphor-icons/web"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              dark: '#070D18',
-              card: '#0F1A2E',
-              cardLight: '#16243E',
-              cyan: '#38BDF8',
-              cyanGlow: '#0EA5E9',
-              teal: '#0D9488',
-              accent: '#38E5FF'
-            }
-          },
-          animation: {
-            'wave-slow': 'wave 6s ease-in-out infinite',
-            'pulse-subtle': 'pulseSubtle 2s infinite',
-            'ripple': 'rippleEffect 0.6s linear',
-            'breath': 'breathScale 16s infinite ease-in-out'
-          },
-          keyframes: {
-            pulseSubtle: {
-              '0%, 100%': { transform: 'scale(1)', opacity: '1' },
-              '50%': { transform: 'scale(1.03)', opacity: '0.9' }
-            },
-            rippleEffect: {
-              '0%': { transform: 'scale(0.8)', opacity: '1' },
-              '100%': { transform: 'scale(2.2)', opacity: '0' }
-            }
-          }
-        }
-      }
-    }
-  </script>
+  <meta name="theme-color" content="#0284c7">
+  <link rel="icon" href="https://fav.farm/💧">
   <style>
-    /* Estilos customizados para barra de rolagem e efeitos haptics visuais */
-    ::-webkit-scrollbar {
-      width: 4px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #070d18;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #1e293b;
-      border-radius: 9999px;
-    }
-    .water-bubble {
-      position: absolute;
-      background: radial-gradient(circle at 30% 30%, rgba(56, 229, 255, 0.8), rgba(14, 165, 233, 0.2));
-      border-radius: 50%;
-      pointer-events: none;
-      animation: floatUp 1.2s ease-out forwards;
-    }
-    @keyframes floatUp {
-      0% {
-        transform: translateY(0) scale(0.6);
-        opacity: 0.9;
-      }
-      100% {
-        transform: translateY(-90px) scale(1.4);
-        opacity: 0;
-      }
-    }
-    .press-effect:active {
-      transform: scale(0.95);
-    }
+    body { -webkit-tap-highlight-color: transparent; }
   </style>
 </head>
-<body class="bg-brand-dark text-slate-100 font-sans antialiased min-h-screen flex flex-col justify-between selection:bg-brand-cyan selection:text-brand-dark pb-8">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans select-none pb-12">
 
-  <!-- TOP BAR -->
-  <header class="w-full max-w-md mx-auto px-5 pt-5 pb-3 flex items-center justify-between">
-    <div class="flex items-center gap-2.5">
-      <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-cyan to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-        <i class="ph-fill ph-drop text-2xl text-white"></i>
-      </div>
+  <!-- Diagnóstico no topo para sabermos se o telemóvel está a aceitar guardar dados -->
+  <div id="storageAlert" class="bg-amber-500/20 text-amber-200 text-[11px] px-3 py-1 text-center border-b border-amber-500/30">
+    A testar armazenamento local...
+  </div>
+
+  <header class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/80 backdrop-blur sticky top-0 z-20">
+    <div class="flex items-center gap-2">
+      <span class="text-2xl">💧</span>
       <div>
-        <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
-          Gole Limpo
-          <span class="text-[10px] bg-cyan-950 text-brand-accent px-2 py-0.5 rounded-full font-semibold border border-cyan-800/40">Vape Free</span>
-        </h1>
-        <p class="text-xs text-slate-400">Água no lugar do vapor</p>
+        <h1 class="text-lg font-bold leading-none text-sky-400">Gole Limpo</h1>
+        <p class="text-xs text-slate-400">Vape to Water</p>
       </div>
     </div>
-    <button id="btnSettings" class="w-10 h-10 rounded-xl bg-brand-card hover:bg-brand-cardLight border border-slate-800 flex items-center justify-center text-slate-300 transition-colors press-effect">
-      <i class="ph ph-gear-six text-xl"></i>
+    <button onclick="resetDataPrompt()" class="text-xs bg-slate-800 text-slate-400 px-2.5 py-1 rounded border border-slate-700 active:scale-95 transition">
+      Zerar
     </button>
   </header>
 
-  <!-- MAIN CONTAINER (MOBILE FIRST) -->
-  <main class="w-full max-w-md mx-auto px-5 flex-1 flex flex-col gap-5">
-    
-    <!-- CRONÔMETRO LIVRE DO VAPE -->
-    <section class="bg-brand-card/90 backdrop-blur border border-slate-800/80 rounded-2xl p-4 shadow-xl">
-      <div class="flex items-center justify-between text-xs text-slate-400 mb-2.5">
-        <span class="flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-          Tempo sem Vape
-        </span>
-        <button id="btnResetTimer" class="text-slate-500 hover:text-slate-300 text-[11px] underline">redefinir início</button>
+  <main class="flex-1 max-w-md w-full mx-auto p-4 flex flex-col gap-5">
+
+    <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-4 text-center shadow-lg">
+      <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Tempo sem fumar</span>
+      <div id="cleanTimer" class="text-3xl font-extrabold text-sky-400 mt-1 tracking-tight">0d 0h 00m 00s</div>
+      <p id="startTimeInfo" class="text-[10px] text-slate-500 mt-1">Início: a carregar...</p>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+      <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-3 flex flex-col items-center justify-center">
+        <span class="text-xs text-slate-400">Água Consumida</span>
+        <span id="waterCount" class="text-2xl font-bold text-sky-300 mt-0.5">0 ml</span>
       </div>
-      <div class="grid grid-cols-4 gap-2 text-center" id="quitTimerDisplay">
-        <div class="bg-brand-dark/70 rounded-xl p-2 border border-slate-800/50">
-          <div class="text-xl font-bold text-brand-accent" id="timerDays">0</div>
-          <div class="text-[10px] text-slate-400 uppercase tracking-wider">Dias</div>
-        </div>
-        <div class="bg-brand-dark/70 rounded-xl p-2 border border-slate-800/50">
-          <div class="text-xl font-bold text-slate-200" id="timerHours">0</div>
-          <div class="text-[10px] text-slate-400 uppercase tracking-wider">Horas</div>
-        </div>
-        <div class="bg-brand-dark/70 rounded-xl p-2 border border-slate-800/50">
-          <div class="text-xl font-bold text-slate-200" id="timerMins">0</div>
-          <div class="text-[10px] text-slate-400 uppercase tracking-wider">Min</div>
-        </div>
-        <div class="bg-brand-dark/70 rounded-xl p-2 border border-slate-800/50">
-          <div class="text-xl font-bold text-slate-200" id="timerSecs">0</div>
-          <div class="text-[10px] text-slate-400 uppercase tracking-wider">Seg</div>
-        </div>
+      <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-3 flex flex-col items-center justify-center">
+        <span class="text-xs text-slate-400">Gatilhos Vencidos</span>
+        <span id="cravingsCount" class="text-2xl font-bold text-emerald-400 mt-0.5">0</span>
       </div>
-    </section>
+    </div>
 
-    <!-- ÁREA CENTRAL DO GATILHO (BOTÃO HERO) -->
-    <section class="flex flex-col items-center justify-center my-2 relative">
-      <!-- Círculo de pulso radiante -->
-      <div class="absolute w-64 h-64 rounded-full bg-gradient-to-r from-brand-cyan/20 to-blue-600/10 blur-2xl -z-10 animate-pulse"></div>
-
-      <!-- Container do Botão com efeito Haptic/Splash -->
-      <div class="relative flex items-center justify-center">
-        <!-- Onda animada de fundo -->
-        <div id="btnRipple" class="absolute w-52 h-52 rounded-full border-2 border-brand-cyan/40 scale-100 opacity-0 pointer-events-none transition-all duration-700"></div>
-
-        <button id="btnDrink" class="group relative w-56 h-56 rounded-full bg-gradient-to-b from-brand-cardLight via-brand-card to-[#091322] border-4 border-cyan-500/40 p-4 shadow-2xl shadow-cyan-500/25 flex flex-col items-center justify-center gap-1.5 transition-all duration-200 active:scale-95 hover:border-cyan-400 focus:outline-none">
-          
-          <!-- Anel de Progresso d'Água SVG ao redor -->
-          <svg class="absolute inset-0 w-full h-full -rotate-90 pointer-events-none p-1">
-            <circle cx="108" cy="108" r="102" stroke="#1e293b" stroke-width="4" fill="none" class="opacity-50"></circle>
-            <circle id="waterProgressRing" cx="108" cy="108" r="102" stroke="url(#cyanGrad)" stroke-width="4" stroke-dasharray="640" stroke-dashoffset="640" stroke-linecap="round" fill="none" class="transition-all duration-700"></circle>
-            <defs>
-              <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#38E5FF" />
-                <stop offset="100%" stop-color="#0EA5E9" />
-              </linearGradient>
-            </defs>
-          </svg>
-
-          <!-- Ícone animado -->
-          <div class="w-16 h-16 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-            <i class="ph-fill ph-drop-half-bottom text-4xl text-brand-accent animate-bounce"></i>
-          </div>
-
-          <span class="text-base font-extrabold text-white tracking-wide mt-1">TROQUEI POR ÁGUA!</span>
-          <span class="text-xs font-medium text-cyan-300/80 bg-cyan-950/70 px-3 py-1 rounded-full border border-cyan-800/50">+200ml • 1 fissura superada</span>
-        </button>
-      </div>
-
-      <p class="text-xs text-slate-400 mt-4 text-center max-w-xs">
-        Sentiu o reflexo da boca ou a mão buscando o vape? Pegue sua garrafa, dê <span class="text-brand-cyan font-semibold">2 a 3 goles fundos</span> e aperte o botão.
-      </p>
-
-      <!-- BOTÃO DE REGISTRO DE RECAÍDA / DESLIZE -->
-      <div class="mt-3">
-        <button id="btnRelapse" class="text-xs text-slate-400 hover:text-rose-400 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/60 border border-slate-800/80 hover:border-rose-900/50 transition-all press-effect">
-          <i class="ph-bold ph-warning-circle text-rose-400"></i>
-          <span>Acabei fumando / dei uma puxada</span>
-        </button>
-      </div>
-    </section>
-
-    <!-- BOTÃO MODO SOS FISSURA (CRONÔMETRO RESPIRAÇÃO 3 MIN) -->
-    <section>
-      <button id="btnOpenSOS" class="w-full bg-gradient-to-r from-teal-900/40 via-cyan-950/50 to-blue-950/40 hover:from-teal-900/60 hover:to-blue-900/60 border border-cyan-700/40 rounded-2xl p-3.5 flex items-center justify-between transition-all press-effect shadow-lg shadow-cyan-950/30">
-        <div class="flex items-center gap-3">
-          <div class="w-11 h-11 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-brand-accent">
-            <i class="ph-bold ph-wind text-2xl"></i>
-          </div>
-          <div class="text-left">
-            <div class="text-sm font-bold text-white flex items-center gap-1.5">
-              SOS Fissura Aguda
-              <span class="text-[10px] bg-red-500/20 text-red-300 font-semibold px-2 py-0.2 rounded-md border border-red-500/30">3 min</span>
-            </div>
-            <div class="text-xs text-slate-300">Exercício guiado de respiração + água</div>
-          </div>
-        </div>
-        <i class="ph-bold ph-caret-right text-cyan-400 text-lg"></i>
+    <div class="flex flex-col items-center gap-3 my-auto py-4">
+      <button onclick="registerWaterDrink()" class="w-48 h-48 rounded-full bg-gradient-to-tr from-sky-600 to-cyan-400 text-white font-extrabold shadow-xl shadow-sky-500/20 active:scale-95 transition-all flex flex-col items-center justify-center border-4 border-sky-300/30">
+        <span class="text-4xl mb-1">💧</span>
+        <span class="text-lg leading-tight text-center px-4">Troquei por Água!</span>
+        <span class="text-xs opacity-80 mt-1">+200 ml</span>
       </button>
-    </section>
 
-    <!-- DASHBOARD DE PROGRESSO DO DIA & TOTAL -->
-    <section class="grid grid-cols-2 gap-3">
-      <!-- Água Ingerida Hoje -->
-      <div class="bg-brand-card border border-slate-800 rounded-2xl p-3.5 flex flex-col justify-between">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-medium text-slate-400">Água Hoje</span>
-          <i class="ph-bold ph-pint-glass text-brand-cyan text-lg"></i>
-        </div>
-        <div class="mt-2">
-          <div class="text-2xl font-black text-white" id="todayWaterText">0 ml</div>
-          <div class="w-full bg-slate-800 rounded-full h-1.5 mt-2 overflow-hidden">
-            <div id="todayWaterBar" class="bg-gradient-to-r from-brand-cyan to-blue-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
-          </div>
-          <div class="flex justify-between text-[10px] text-slate-400 mt-1">
-            <span>0%</span>
-            <span id="targetWaterLabel">Meta: 2.0L</span>
-          </div>
-        </div>
-      </div>
+      <button onclick="openSlipModal()" class="text-xs text-rose-400/80 hover:text-rose-300 py-2 px-4 rounded-full border border-rose-900/40 bg-rose-950/20 active:scale-95 transition">
+        ⚠️ Acabei dando uma puxada
+      </button>
+    </div>
 
-      <!-- Fissuras Vencidas Hoje -->
-      <div class="bg-brand-card border border-slate-800 rounded-2xl p-3.5 flex flex-col justify-between">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-medium text-slate-400">Fissuras Vencidas</span>
-          <i class="ph-bold ph-shield-check text-emerald-400 text-lg"></i>
-        </div>
-        <div class="mt-2">
-          <div class="text-2xl font-black text-emerald-400" id="todayCravingCount">0</div>
-          <div class="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
-            <span>Puxadas evitadas:</span>
-            <span class="font-bold text-slate-200" id="todayPuffsAvoided">0</span>
-          </div>
-        </div>
+    <div class="bg-slate-800/60 border border-slate-700/80 rounded-2xl p-4">
+      <div class="flex justify-between items-center mb-3">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Histórico de Hoje</span>
+        <span id="slipCounter" class="text-xs font-semibold text-rose-400">0 puxadas</span>
       </div>
-
-      <!-- Economia em Dinheiro Estimada -->
-      <div class="bg-brand-card border border-slate-800 rounded-2xl p-3.5">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-medium text-slate-400">Economia</span>
-          <i class="ph-bold ph-currency-circle-dollar text-amber-400 text-lg"></i>
-        </div>
-        <div class="mt-2">
-          <div class="text-xl font-bold text-amber-300" id="moneySavedText">R$ 0,00</div>
-          <div class="text-[10px] text-slate-400 mt-1">guardados no bolso</div>
-        </div>
+      <div id="logList" class="flex flex-col gap-2 max-h-48 overflow-y-auto text-xs pr-1">
       </div>
-
-      <!-- Total Histórico de Vitórias e Deslizes -->
-      <div class="bg-brand-card border border-slate-800 rounded-2xl p-3.5">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-medium text-slate-400">Total Vencido</span>
-          <i class="ph-bold ph-trophy text-purple-400 text-lg"></i>
-        </div>
-        <div class="mt-2">
-          <div class="text-xl font-bold text-purple-300" id="totalCravingCount">0 vezes</div>
-          <div class="text-[10px] text-slate-400 mt-1 flex items-center justify-between">
-            <span id="totalWaterText">0 L de água total</span>
-            <button id="btnOpenSlipHistory" class="text-rose-400 hover:text-rose-300 font-bold underline flex items-center gap-0.5">
-              <span id="totalSlipsLabel">0 puxadas</span>
-              <i class="ph-bold ph-caret-right text-[10px]"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- HISTÓRICO RÁPIDO DO DIA COM FILTROS -->
-    <section class="bg-brand-card border border-slate-800 rounded-2xl p-4">
-      <div class="flex items-center justify-between mb-3">
-        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-          <i class="ph-bold ph-clock-counter-clockwise text-brand-cyan"></i>
-          Linha do Tempo
-        </h3>
-        <span class="text-[11px] text-slate-400" id="todayLogsSummary">0 registros</span>
-      </div>
-
-      <!-- FILTROS DE HISTÓRICO -->
-      <div class="flex items-center gap-1.5 mb-3 bg-brand-dark/70 p-1 rounded-xl border border-slate-800/80">
-        <button id="filterAll" class="filter-tab flex-1 py-1.5 rounded-lg text-xs font-medium transition-all bg-brand-card text-brand-accent shadow">
-          Todos
-        </button>
-        <button id="filterWater" class="filter-tab flex-1 py-1.5 rounded-lg text-xs font-medium transition-all text-slate-400 hover:text-slate-200">
-          💧 Água
-        </button>
-        <button id="filterSlips" class="filter-tab flex-1 py-1.5 rounded-lg text-xs font-medium transition-all text-rose-400/80 hover:text-rose-300 flex items-center justify-center gap-1">
-          <span>⚠️ Falhas</span>
-          <span id="filterSlipsBadge" class="bg-rose-950 text-rose-400 text-[10px] px-1.5 py-0.2 rounded-full font-bold hidden">0</span>
-        </button>
-      </div>
-
-      <div id="todayLogsList" class="flex flex-col gap-2 max-h-52 overflow-y-auto pr-1">
-        <!-- Renderizado dinamicamente -->
-        <div class="text-center py-6 text-xs text-slate-500">
-          Nenhum registro hoje ainda. Ao sentir o impulso, beba água e marque!
-        </div>
-      </div>
-    </section>
+    </div>
 
   </main>
 
-  <!-- MODAL: REGISTRO DE DESLIZE / FUMEI -->
-  <div id="modalRelapse" class="fixed inset-0 bg-brand-dark/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-brand-card border border-rose-900/40 rounded-3xl p-6 w-full max-w-sm shadow-2xl">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center">
-            <i class="ph-bold ph-heartbreak text-lg"></i>
-          </div>
-          <h3 class="text-base font-bold text-white">Deu uma puxada?</h3>
+  <div id="slipModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-800 border border-slate-700 max-w-sm w-full rounded-2xl p-5 shadow-2xl">
+      <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+        <span>⚠️</span> Registar Puxada
+      </h3>
+      <p class="text-xs text-slate-400 mt-1">Identificar o gatilho ajuda a antecipar a próxima vez.</p>
+
+      <div class="mt-4">
+        <label class="text-xs font-semibold text-slate-300">Qual foi o gatilho?</label>
+        <div class="grid grid-cols-2 gap-2 mt-2">
+          <button type="button" onclick="selectTrigger('Ansiedade')" class="trigger-btn bg-slate-700 text-slate-200 text-xs py-2 px-3 rounded-lg border border-slate-600">Ansiedade</button>
+          <button type="button" onclick="selectTrigger('Tédio / Hábito')" class="trigger-btn bg-slate-700 text-slate-200 text-xs py-2 px-3 rounded-lg border border-slate-600">Tédio</button>
+          <button type="button" onclick="selectTrigger('Social')" class="trigger-btn bg-slate-700 text-slate-200 text-xs py-2 px-3 rounded-lg border border-slate-600">Social</button>
+          <button type="button" onclick="selectTrigger('Pós-café')" class="trigger-btn bg-slate-700 text-slate-200 text-xs py-2 px-3 rounded-lg border border-slate-600">Pós-café</button>
         </div>
-        <button id="btnCloseRelapse" class="text-slate-400 hover:text-white">
-          <i class="ph-bold ph-x text-lg"></i>
-        </button>
       </div>
 
-      <div class="mt-4 flex flex-col gap-3">
-        <p class="text-xs text-slate-300 leading-relaxed">
-          <strong>Sem culpa.</strong> Um deslize não apaga o progresso que você já conquistou. O segredo é identificar o que causou isso e retomar imediatamente.
-        </p>
+      <div class="mt-4 flex items-center gap-2">
+        <input type="checkbox" id="resetTimerCheck" class="w-4 h-4 rounded text-sky-500 bg-slate-700 border-slate-600">
+        <label for="resetTimerCheck" class="text-xs text-slate-300">Reiniciar o cronómetro</label>
+      </div>
 
-        <div>
-          <label class="text-xs font-semibold text-slate-300 block mb-1.5">Qual foi o principal gatilho?</label>
-          <div class="grid grid-cols-2 gap-2 text-xs" id="triggerOptions">
-            <button type="button" class="trigger-btn py-2 px-2.5 rounded-xl bg-brand-dark border border-slate-700 hover:border-slate-500 text-slate-300 text-left active:border-rose-400" data-reason="Estresse / Ansiedade">
-              ⚡ Ansiedade
-            </button>
-            <button type="button" class="trigger-btn py-2 px-2.5 rounded-xl bg-brand-dark border border-slate-700 hover:border-slate-500 text-slate-300 text-left active:border-rose-400" data-reason="Social / Amigos">
-              👥 Social / Amigos
-            </button>
-            <button type="button" class="trigger-btn py-2 px-2.5 rounded-xl bg-brand-dark border border-slate-700 hover:border-slate-500 text-slate-300 text-left active:border-rose-400" data-reason="Hábito / Tédio">
-              📱 Hábito / Tédio
-            </button>
-            <button type="button" class="trigger-btn py-2 px-2.5 rounded-xl bg-brand-dark border border-slate-700 hover:border-slate-500 text-slate-300 text-left active:border-rose-400" data-reason="Após refeição / café">
-              ☕ Pós-café / Refeição
-            </button>
-          </div>
-        </div>
-
-        <div class="bg-brand-dark/60 rounded-xl p-3 border border-slate-800 text-xs">
-          <label class="flex items-center gap-2 cursor-pointer text-slate-300">
-            <input type="checkbox" id="checkResetTimer" class="w-4 h-4 rounded border-slate-700 text-rose-500 focus:ring-0" checked>
-            <span>Reiniciar cronômetro sem vape para agora</span>
-          </label>
-        </div>
-
-        <div class="pt-2 flex flex-col gap-2">
-          <button id="btnConfirmRelapse" class="w-full py-3 bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm rounded-xl press-effect transition-colors shadow-lg shadow-rose-900/30">
-            Registrar e Voltar ao Foco com Água
-          </button>
-          <button id="btnCancelRelapse" class="w-full py-2 text-xs text-slate-400 hover:text-slate-200">
-            Cancelar (apertei por engano)
-          </button>
-        </div>
+      <div class="mt-5 flex gap-2">
+        <button onclick="closeSlipModal()" class="flex-1 bg-slate-700 text-slate-300 py-2.5 rounded-xl text-xs font-semibold">Cancelar</button>
+        <button onclick="confirmSlip()" class="flex-1 bg-rose-600 text-white py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-rose-900/40">Guardar</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: MODO SOS DE RESPIRAÇÃO (3 MINUTOS) -->
-  <!-- MODAL: HISTÓRICO COMPLETO DE DESLIZES & ANÁLISE DE GATILHOS -->
-  <div id="modalSlipHistory" class="fixed inset-0 bg-brand-dark/95 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-brand-card border border-rose-900/40 rounded-3xl p-6 w-full max-w-sm max-h-[90vh] flex flex-col justify-between shadow-2xl">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center font-bold">
-            <i class="ph-bold ph-chart-line-down text-lg"></i>
-          </div>
-          <div>
-            <h3 class="text-base font-bold text-white">Histórico de Puxadas</h3>
-            <p class="text-[11px] text-slate-400">Entendendo seus gatilhos</p>
-          </div>
-        </div>
-        <button id="btnCloseSlipHistory" class="text-slate-400 hover:text-white">
-          <i class="ph-bold ph-x text-lg"></i>
-        </button>
-      </div>
-
-      <div class="my-4 flex-1 overflow-y-auto pr-1 flex flex-col gap-4">
-        <!-- Métricas Rápidas de Falha vs Sucesso -->
-        <div class="grid grid-cols-2 gap-2 text-center">
-          <div class="bg-brand-dark/80 rounded-2xl p-3 border border-slate-800">
-            <div class="text-2xl font-black text-rose-400" id="modalTotalSlipsCount">0</div>
-            <div class="text-[10px] text-slate-400 uppercase tracking-wider mt-0.5">Total de Deslizes</div>
-          </div>
-          <div class="bg-brand-dark/80 rounded-2xl p-3 border border-slate-800">
-            <div class="text-2xl font-black text-emerald-400" id="modalSuccessRate">100%</div>
-            <div class="text-[10px] text-slate-400 uppercase tracking-wider mt-0.5">Taxa de Vitória</div>
-          </div>
-        </div>
-
-        <!-- Análise dos Gatilhos Frequentes -->
-        <div class="bg-brand-dark/60 rounded-2xl p-3.5 border border-slate-800/80">
-          <span class="text-xs font-bold uppercase tracking-wider text-slate-300 block mb-2">
-            Principais Gatilhos Identificados
-          </span>
-          <div id="triggerBreakdown" class="flex flex-col gap-2">
-            <!-- Gerado via JS -->
-            <p class="text-xs text-slate-500">Nenhum deslize registrado. Continue assim!</p>
-          </div>
-        </div>
-
-        <!-- Lista Detalhada de Todas as Vezes -->
-        <div>
-          <span class="text-xs font-bold uppercase tracking-wider text-slate-300 block mb-2">
-            Histórico de Ocorrências
-          </span>
-          <div id="slipDetailList" class="flex flex-col gap-2">
-            <!-- Gerado via JS -->
-          </div>
-        </div>
-      </div>
-
-      <div class="pt-2 border-t border-slate-800">
-        <button id="btnCloseSlipHistoryFooter" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs rounded-xl transition-colors">
-          Fechar Análise
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: CONFIGURAÇÕES & DADOS -->
-  <div id="modalSettings" class="fixed inset-0 bg-brand-dark/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-brand-card border border-slate-800 rounded-3xl p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto shadow-2xl">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <h3 class="text-base font-bold text-white flex items-center gap-2">
-          <i class="ph-bold ph-sliders-horizontal text-brand-cyan"></i>
-          Configurações
-        </h3>
-        <button id="btnCloseSettings" class="text-slate-400 hover:text-white">
-          <i class="ph-bold ph-x text-lg"></i>
-        </button>
-      </div>
-
-      <form id="settingsForm" class="mt-4 flex flex-col gap-4">
-        <div>
-          <label class="text-xs font-semibold text-slate-300 block mb-1">Data/Hora da última puxada no Vape:</label>
-          <input type="datetime-local" id="inputQuitDate" class="w-full bg-brand-dark border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-brand-cyan">
-        </div>
-
-        <div>
-          <label class="text-xs font-semibold text-slate-300 block mb-1">Meta de água diária (ml):</label>
-          <input type="number" id="inputDailyWater" step="100" min="500" max="6000" class="w-full bg-brand-dark border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-brand-cyan" placeholder="Ex: 2500">
-        </div>
-
-        <div>
-          <label class="text-xs font-semibold text-slate-300 block mb-1">Tamanho do copo/gole padrão (ml):</label>
-          <input type="number" id="inputDrinkSize" step="50" min="50" max="1000" class="w-full bg-brand-dark border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-brand-cyan" placeholder="Ex: 200">
-        </div>
-
-        <div>
-          <label class="text-xs font-semibold text-slate-300 block mb-1">Gasto mensal estimado com Vape (R$):</label>
-          <input type="number" id="inputVapeCost" step="10" min="0" class="w-full bg-brand-dark border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-brand-cyan" placeholder="Ex: 250">
-        </div>
-
-        <div class="pt-2 flex flex-col gap-2">
-          <button type="submit" class="w-full py-3 bg-brand-cyan text-brand-dark font-bold text-sm rounded-xl press-effect hover:bg-cyan-300 transition-colors">
-            Salvar Preferências
-          </button>
-          <button type="button" id="btnExportData" class="w-full py-2.5 bg-slate-800 text-slate-300 font-medium text-xs rounded-xl hover:bg-slate-700 transition-colors">
-            Limpar Registros de Hoje
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- NOTIFICAÇÃO TOAST FLUTUANTE -->
-  <div id="toastNotification" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-cyan-950/90 border border-brand-cyan text-brand-accent px-4 py-2.5 rounded-full text-xs font-semibold shadow-xl transition-all duration-300 opacity-0 pointer-events-none translate-y-4 z-50 flex items-center gap-2">
-    <i class="ph-fill ph-check-circle text-base"></i>
-    <span id="toastMsg">Vontade vencida com hidratação!</span>
-  </div>
-
-  <!-- JAVASCRIPT PRINCIPAL -->
   <script>
-    // --- GERADOR DE SONS VIA WEB AUDIO API (SEM DEPENDÊNCIA EXTERNA) ---
-    const SoundEngine = {
-      ctx: null,
-      init() {
-        if (!this.ctx) {
-          const AudioCtx = window.AudioContext || window.webkitAudioContext;
-          if (AudioCtx) this.ctx = new AudioCtx();
-        }
-      },
-      playWaterDrop() {
-        try {
-          this.init();
-          if (!this.ctx) return;
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
+    const STORAGE_KEY = 'gole_limpo_dados_v2';
+    let selectedTrigger = 'Tédio / Hábito';
 
-          osc.type = 'sine';
-          // Efeito de pitch subindo como gota caindo na água
-          const now = this.ctx.currentTime;
-          osc.frequency.setValueAtTime(400, now);
-          osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
+    let state = {
+      startTime: Date.now(),
+      waterTotal: 0,
+      cravingsSaved: 0,
+      slips: 0,
+      logs: []
+    };
 
-          gain.gain.setValueAtTime(0.3, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-
-          osc.start(now);
-          osc.stop(now + 0.25);
-        } catch (e) {
-          console.error("Audio error", e);
-        }
-      },
-      playBreathBell() {
-        try {
-          this.init();
-          if (!this.ctx) return;
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          const now = this.ctx.currentTime;
-
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(523.25, now); // Nota C5 sutil
-
-          gain.gain.setValueAtTime(0.2, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
-
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-
-          osc.start(now);
-          osc.stop(now + 1.2);
-        } catch (e) {
-          console.error("Audio error", e);
-        }
+    function checkStorageSupport() {
+      const el = document.getElementById('storageAlert');
+      try {
+        localStorage.setItem('__test_storage__', '1');
+        localStorage.removeItem('__test_storage__');
+        el.className = 'bg-emerald-500/20 text-emerald-300 text-[11px] px-3 py-1 text-center border-b border-emerald-500/30';
+        el.textContent = '✓ Memória local ativa e a gravar neste dispositivo';
+      } catch (e) {
+        el.className = 'bg-rose-500/20 text-rose-300 text-[11px] px-3 py-1 text-center border-b border-rose-500/30';
+        el.textContent = 'Aviso: O navegador está em modo restrito ou privado. Os dados serão perdidos ao fechar.';
       }
-    };
+    }
 
-    // --- ESTADO DA APLICAÇÃO E PERSISTÊNCIA LOCALSTORAGE ---
-    const STORAGE_KEY = 'gole_limpo_vape_app_v1';
-
-    const defaultState = {
-      quitDate: new Date().toISOString(),
-      dailyWaterTarget: 2500, // em ml
-      drinkSize: 200, // em ml por fissura trocada
-      monthlyCost: 200, // R$ estimado por mês
-      todayDate: new Date().toDateString(),
-      todayWater: 0,
-      todayCravings: 0,
-      todaySlips: 0,
-      totalWater: 0,
-      totalCravings: 0,
-      totalSlips: 0,
-      logs: [] // { id, timestamp, type: 'water'|'slip', amountMl, note }
-    };
-
-    let AppState = { ...defaultState };
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.error('Erro ao guardar:', e);
+      }
+    }
 
     function loadState() {
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
           const parsed = JSON.parse(saved);
-          AppState = { ...defaultState, ...parsed };
-
-          // Verificar virada de dia
-          const today = new Date().toDateString();
-          if (AppState.todayDate !== today) {
-            AppState.todayDate = today;
-            AppState.todayWater = 0;
-            AppState.todayCravings = 0;
-            AppState.todaySlips = 0;
-            saveState();
-          }
+          state = { ...state, ...parsed };
         } else {
           saveState();
         }
-      } catch (err) {
-        console.error("Erro ao carregar localStorage:", err);
+      } catch (e) {
+        console.error('Erro ao ler:', e);
       }
+      renderUI();
     }
 
-    function saveState() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(AppState));
-      } catch (err) {
-        console.error("Erro ao salvar localStorage:", err);
-      }
-    }
+    function renderUI() {
+      document.getElementById('waterCount').textContent = `${state.waterTotal} ml`;
+      document.getElementById('cravingsCount').textContent = state.cravingsSaved;
+      document.getElementById('slipCounter').textContent = `${state.slips} ${state.slips === 1 ? 'puxada' : 'puxadas'}`;
 
-    // Elementos do DOM
-    const btnDrink = document.getElementById('btnDrink');
-    const btnRipple = document.getElementById('btnRipple');
-    const waterProgressRing = document.getElementById('waterProgressRing');
-    const todayWaterText = document.getElementById('todayWaterText');
-    const todayWaterBar = document.getElementById('todayWaterBar');
-    const targetWaterLabel = document.getElementById('targetWaterLabel');
-    const todayCravingCount = document.getElementById('todayCravingCount');
-    const todayPuffsAvoided = document.getElementById('todayPuffsAvoided');
-    const totalCravingCount = document.getElementById('totalCravingCount');
-    const totalWaterText = document.getElementById('totalWaterText');
-    const totalSlipsLabel = document.getElementById('totalSlipsLabel');
-    const moneySavedText = document.getElementById('moneySavedText');
-    const todayLogsList = document.getElementById('todayLogsList');
-    const todayLogsSummary = document.getElementById('todayLogsSummary');
+      const d = new Date(state.startTime);
+      document.getElementById('startTimeInfo').textContent = `Início: ${d.toLocaleDateString()} às ${d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
 
-    // Filtros de Histórico
-    const filterAll = document.getElementById('filterAll');
-    const filterWater = document.getElementById('filterWater');
-    const filterSlips = document.getElementById('filterSlips');
-    const filterSlipsBadge = document.getElementById('filterSlipsBadge');
-    let activeFilter = 'all'; // 'all' | 'water' | 'slips'
+      const logContainer = document.getElementById('logList');
+      logContainer.innerHTML = '';
 
-    // Modal de Histórico de Deslizes
-    const btnOpenSlipHistory = document.getElementById('btnOpenSlipHistory');
-    const modalSlipHistory = document.getElementById('modalSlipHistory');
-    const btnCloseSlipHistory = document.getElementById('btnCloseSlipHistory');
-    const btnCloseSlipHistoryFooter = document.getElementById('btnCloseSlipHistoryFooter');
-    const modalTotalSlipsCount = document.getElementById('modalTotalSlipsCount');
-    const modalSuccessRate = document.getElementById('modalSuccessRate');
-    const triggerBreakdown = document.getElementById('triggerBreakdown');
-    const slipDetailList = document.getElementById('slipDetailList');
-
-    // Deslize / Relapse elementos
-    const btnRelapse = document.getElementById('btnRelapse');
-    const modalRelapse = document.getElementById('modalRelapse');
-    const btnCloseRelapse = document.getElementById('btnCloseRelapse');
-    const btnCancelRelapse = document.getElementById('btnCancelRelapse');
-    const btnConfirmRelapse = document.getElementById('btnConfirmRelapse');
-    const checkResetTimer = document.getElementById('checkResetTimer');
-    const triggerButtons = document.querySelectorAll('.trigger-btn');
-    let selectedTriggerReason = 'Ansiedade';
-
-    // Cronômetro elementos
-    const timerDays = document.getElementById('timerDays');
-    const timerHours = document.getElementById('timerHours');
-    const timerMins = document.getElementById('timerMins');
-    const timerSecs = document.getElementById('timerSecs');
-    const btnResetTimer = document.getElementById('btnResetTimer');
-
-    // Modais
-    const modalSOS = document.getElementById('modalSOS');
-    const btnOpenSOS = document.getElementById('btnOpenSOS');
-    const btnCloseSOS = document.getElementById('btnCloseSOS');
-    const btnFinishSOS = document.getElementById('btnFinishSOS');
-    const breathRing = document.getElementById('breathRing');
-    const breathPhaseText = document.getElementById('breathPhaseText');
-    const breathTimerNum = document.getElementById('breathTimerNum');
-    const breathTip = document.getElementById('breathTip');
-    const sosCountdown = document.getElementById('sosCountdown');
-
-    const modalSettings = document.getElementById('modalSettings');
-    const btnSettings = document.getElementById('btnSettings');
-    const btnCloseSettings = document.getElementById('btnCloseSettings');
-    const settingsForm = document.getElementById('settingsForm');
-    const inputQuitDate = document.getElementById('inputQuitDate');
-    const inputDailyWater = document.getElementById('inputDailyWater');
-    const inputDrinkSize = document.getElementById('inputDrinkSize');
-    const inputVapeCost = document.getElementById('inputVapeCost');
-    const btnExportData = document.getElementById('btnExportData');
-    const toastNotification = document.getElementById('toastNotification');
-    const toastMsg = document.getElementById('toastMsg');
-
-    // --- ATUALIZAÇÕES DE INTERFACE ---
-    function updateUI() {
-      // Água hoje e barra
-      todayWaterText.textContent = `${AppState.todayWater} ml`;
-      const pct = Math.min(100, Math.round((AppState.todayWater / AppState.dailyWaterTarget) * 100));
-      todayWaterBar.style.width = `${pct}%`;
-      targetWaterLabel.textContent = `Meta: ${(AppState.dailyWaterTarget / 1000).toFixed(1)}L`;
-
-      // Círculo SVG de progresso
-      const ringCircumference = 2 * Math.PI * 102; // ~640.88
-      const offset = ringCircumference - (ringCircumference * pct) / 100;
-      waterProgressRing.style.strokeDashoffset = Math.max(0, offset);
-
-      // Fissuras superadas hoje e puxadas
-      todayCravingCount.textContent = AppState.todayCravings;
-      const puffs = AppState.todayCravings * 10;
-      todayPuffsAvoided.textContent = `~${puffs}`;
-
-      // Histórico geral
-      totalCravingCount.textContent = `${AppState.totalCravings} vezes`;
-      totalWaterText.textContent = `${(AppState.totalWater / 1000).toFixed(1)} L de água total`;
-
-      // Contador e link para histórico de falhas
-      const slipTotal = AppState.totalSlips || 0;
-      totalSlipsLabel.textContent = `${slipTotal} falha${slipTotal === 1 ? '' : 's'}`;
-
-      const todaySlipsCount = AppState.logs.filter(l => l.type === 'slip' && new Date(l.timestamp).toDateString() === new Date().toDateString()).length;
-      if (todaySlipsCount > 0) {
-        filterSlipsBadge.classList.remove('hidden');
-        filterSlipsBadge.textContent = todaySlipsCount;
-      } else {
-        filterSlipsBadge.classList.add('hidden');
-      }
-
-      // Economia financeira calculada
-      calculateMoneySaved();
-
-      // Renderizar Logs
-      renderLogs();
-    }
-
-    function calculateMoneySaved() {
-      const quitMs = new Date(AppState.quitDate).getTime();
-      const nowMs = Date.now();
-      const diffDays = Math.max(0, (nowMs - quitMs) / (1000 * 60 * 60 * 24));
-      const dailyCost = (AppState.monthlyCost || 200) / 30;
-      const saved = diffDays * dailyCost;
-      moneySavedText.textContent = `R$ ${saved.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    }
-
-    function renderLogs() {
-      todayLogsList.innerHTML = '';
-      const today = new Date().toDateString();
-      let logs = AppState.logs.filter(l => new Date(l.timestamp).toDateString() === today);
-
-      if (activeFilter === 'water') {
-        logs = logs.filter(l => l.type === 'water');
-      } else if (activeFilter === 'slips') {
-        logs = logs.filter(l => l.type === 'slip');
-      }
-
-      todayLogsSummary.textContent = `${logs.length} registro${logs.length === 1 ? '' : 's'}`;
-
-      if (logs.length === 0) {
-        const emptyMsg = activeFilter === 'slips' 
-          ? "Nenhuma falha hoje! Você está firme no propósito. 👏" 
-          : "Nenhum registro correspondente ao filtro hoje.";
-        todayLogsList.innerHTML = `
-          <div class="text-center py-6 text-xs text-slate-500">
-            ${emptyMsg}
-          </div>
-        `;
+      if (state.logs.length === 0) {
+        logContainer.innerHTML = '<span class="text-slate-500 italic">Nenhum registo ainda.</span>';
         return;
       }
 
-      // Mais recentes primeiro
-      const sorted = [...logs].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-      sorted.forEach(log => {
-        const time = new Date(log.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-        const row = document.createElement('div');
-        const isSlip = log.type === 'slip';
-
-        if (isSlip) {
-          row.className = 'flex items-center justify-between p-2.5 rounded-xl bg-rose-950/20 border border-rose-900/40 text-xs';
-          row.innerHTML = `
-            <div class="flex items-center gap-2.5">
-              <div class="w-6 h-6 rounded-lg bg-rose-950 text-rose-400 flex items-center justify-center font-bold">
-                <i class="ph-bold ph-fire"></i>
-              </div>
-              <div>
-                <span class="font-medium text-rose-200">Puxada no vape</span>
-                <span class="text-[10px] text-rose-400/80 block">Gatilho: ${log.note || 'Deslize momentâneo'}</span>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="font-mono text-slate-400 text-[11px]">${time}</span>
-              <button onclick="removeLog('${log.id}')" class="text-slate-600 hover:text-red-400 p-1">
-                <i class="ph ph-trash text-sm"></i>
-              </button>
-            </div>
-          `;
-        } else {
-          row.className = 'flex items-center justify-between p-2.5 rounded-xl bg-brand-dark/60 border border-slate-800/80 text-xs';
-          row.innerHTML = `
-            <div class="flex items-center gap-2.5">
-              <div class="w-6 h-6 rounded-lg bg-cyan-950 text-brand-cyan flex items-center justify-center font-bold">
-                <i class="ph ph-drop"></i>
-              </div>
-              <div>
-                <span class="font-medium text-slate-200">+${log.amountMl}ml de água pura</span>
-                <span class="text-[10px] text-slate-500 block">Vape recusado</span>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="font-mono text-slate-400 text-[11px]">${time}</span>
-              <button onclick="removeLog('${log.id}')" class="text-slate-600 hover:text-red-400 p-1">
-                <i class="ph ph-trash text-sm"></i>
-              </button>
-            </div>
-          `;
-        }
-
-        todayLogsList.appendChild(row);
+      state.logs.slice().reverse().forEach(log => {
+        const item = document.createElement('div');
+        item.className = 'flex items-center justify-between p-2 rounded-lg ' + 
+          (log.type === 'water' ? 'bg-slate-700/40 border border-sky-900/20' : 'bg-rose-950/30 border border-rose-900/30');
+        item.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span>${log.type === 'water' ? '💧' : '⚠️'}</span>
+            <span class="${log.type === 'water' ? 'text-slate-200' : 'text-rose-300 font-semibold'}">${log.desc}</span>
+          </div>
+          <span class="text-slate-400 text-[10px]">${log.time}</span>
+        `;
+        logContainer.appendChild(item);
       });
     }
 
-    // Configuração dos Botões de Filtro
-    function setupFilters() {
-      const tabs = [
-        { btn: filterAll, id: 'all' },
-        { btn: filterWater, id: 'water' },
-        { btn: filterSlips, id: 'slips' }
-      ];
-
-      tabs.forEach(({ btn, id }) => {
-        btn.addEventListener('click', () => {
-          activeFilter = id;
-          tabs.forEach(t => {
-            t.btn.classList.remove('bg-brand-card', 'text-brand-accent', 'shadow');
-            t.btn.classList.add('text-slate-400');
-          });
-          btn.classList.add('bg-brand-card', 'text-brand-accent', 'shadow');
-          btn.classList.remove('text-slate-400');
-          renderLogs();
-        });
-      });
-    }
-    setupFilters();
-
-    // Renderização do Modal de Histórico de Falhas & Gatilhos
-    function openSlipHistoryModal() {
-      const allSlips = AppState.logs.filter(l => l.type === 'slip');
-      const totalSlips = allSlips.length;
-      const totalWins = AppState.logs.filter(l => l.type === 'water').length;
-      const totalDecisions = totalSlips + totalWins;
-
-      modalTotalSlipsCount.textContent = totalSlips;
-      
-      const winPct = totalDecisions > 0 ? Math.round((totalWins / totalDecisions) * 100) : 100;
-      modalSuccessRate.textContent = `${winPct}%`;
-
-      // Agrupar por Gatilhos
-      const triggerMap = {};
-      allSlips.forEach(s => {
-        const reason = s.note || 'Sem motivo informado';
-        triggerMap[reason] = (triggerMap[reason] || 0) + 1;
-      });
-
-      triggerBreakdown.innerHTML = '';
-      const sortedTriggers = Object.entries(triggerMap).sort((a, b) => b[1] - a[1]);
-
-      if (sortedTriggers.length === 0) {
-        triggerBreakdown.innerHTML = `<p class="text-xs text-slate-500 py-1">Nenhum deslize registrado ainda. Parabéns!</p>`;
-      } else {
-        sortedTriggers.forEach(([reason, count]) => {
-          const pct = Math.round((count / totalSlips) * 100);
-          const bar = document.createElement('div');
-          bar.className = 'flex flex-col gap-1 text-xs';
-          bar.innerHTML = `
-            <div class="flex justify-between text-slate-300">
-              <span>${reason}</span>
-              <span class="font-bold text-rose-400">${count}x (${pct}%)</span>
-            </div>
-            <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-              <div class="bg-rose-500 h-1.5 rounded-full" style="width: ${pct}%"></div>
-            </div>
-          `;
-          triggerBreakdown.appendChild(bar);
-        });
-      }
-
-      // Renderizar Ocorrências completas (com data e hora)
-      slipDetailList.innerHTML = '';
-      if (allSlips.length === 0) {
-        slipDetailList.innerHTML = `<p class="text-xs text-slate-500 py-2">Nenhum registro para exibir.</p>`;
-      } else {
-        const sortedSlips = [...allSlips].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        sortedSlips.forEach(s => {
-          const d = new Date(s.timestamp);
-          const dateStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-          const timeStr = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-
-          const row = document.createElement('div');
-          row.className = 'p-2.5 rounded-xl bg-brand-dark/70 border border-rose-950/50 flex items-center justify-between text-xs';
-          row.innerHTML = `
-            <div>
-              <span class="font-semibold text-rose-300">${s.note || 'Puxada no vape'}</span>
-              <span class="text-[10px] text-slate-400 block">${dateStr} às ${timeStr}</span>
-            </div>
-            <button onclick="removeLog('${s.id}')" class="text-slate-600 hover:text-red-400 p-1">
-              <i class="ph ph-trash text-sm"></i>
-            </button>
-          `;
-          slipDetailList.appendChild(row);
-        });
-      }
-
-      modalSlipHistory.classList.remove('hidden');
-    }
-
-    btnOpenSlipHistory.addEventListener('click', openSlipHistoryModal);
-    btnCloseSlipHistory.addEventListener('click', () => modalSlipHistory.classList.add('hidden'));
-    btnCloseSlipHistoryFooter.addEventListener('click', () => modalSlipHistory.classList.add('hidden'));
-
-    window.removeLog = function(logId) {
-      const idx = AppState.logs.findIndex(l => l.id === logId);
-      if (idx !== -1) {
-        const item = AppState.logs[idx];
-        if (item.type === 'slip') {
-          AppState.todaySlips = Math.max(0, (AppState.todaySlips || 0) - 1);
-          AppState.totalSlips = Math.max(0, (AppState.totalSlips || 0) - 1);
-        } else {
-          AppState.todayWater = Math.max(0, AppState.todayWater - (item.amountMl || 0));
-          AppState.totalWater = Math.max(0, AppState.totalWater - (item.amountMl || 0));
-          AppState.todayCravings = Math.max(0, AppState.todayCravings - 1);
-          AppState.totalCravings = Math.max(0, AppState.totalCravings - 1);
-        }
-        AppState.logs.splice(idx, 1);
-        saveState();
-        updateUI();
-        if (!modalSlipHistory.classList.contains('hidden')) {
-          openSlipHistoryModal();
-        }
-        showToast("Registro removido.");
-      }
-    };
-
-    // --- CRONÔMETRO DE DIAS/HORAS/MIN/SEG SEM VAPE ---
-    function updateQuitTimer() {
-      const quitMs = new Date(AppState.quitDate).getTime();
-      const nowMs = Date.now();
-      let diff = Math.max(0, nowMs - quitMs);
-
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      diff -= days * (1000 * 60 * 60 * 24);
-
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      diff -= hours * (1000 * 60 * 60);
-
-      const mins = Math.floor(diff / (1000 * 60));
-      diff -= mins * (1000 * 60);
-
-      const secs = Math.floor(diff / 1000);
-
-      timerDays.textContent = days;
-      timerHours.textContent = hours.toString().padStart(2, '0');
-      timerMins.textContent = mins.toString().padStart(2, '0');
-      timerSecs.textContent = secs.toString().padStart(2, '0');
-
-      calculateMoneySaved();
-    }
-    setInterval(updateQuitTimer, 1000);
-
-    // --- AÇÃO PRINCIPAL: TROQUEI POR ÁGUA ---
-    function registerWaterDrink(customAmount = null) {
-      const amount = customAmount || AppState.drinkSize || 200;
-
-      AppState.todayWater += amount;
-      AppState.totalWater += amount;
-      AppState.todayCravings += 1;
-      AppState.totalCravings += 1;
-
-      const newLog = {
-        id: 'log_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-        timestamp: new Date().toISOString(),
+    function registerWaterDrink() {
+      state.waterTotal += 200;
+      state.cravingsSaved += 1;
+      const now = new Date();
+      state.logs.push({
         type: 'water',
-        amountMl: amount
-      };
-
-      AppState.logs.push(newLog);
-      saveState();
-      updateUI();
-
-      // Som agradável de água
-      SoundEngine.playWaterDrop();
-
-      if ('vibrate' in navigator) {
-        navigator.vibrate([40, 60, 40]);
-      }
-
-      triggerBubbleAnimation();
-      showToast(`Sensacional! +${amount}ml de água ingerida 💧`);
-    }
-
-    // --- REGISTRO DE RECAÍDA / FUMEI ---
-    triggerButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        triggerButtons.forEach(b => b.classList.remove('border-rose-400', 'bg-rose-950/30', 'text-rose-200'));
-        btn.classList.add('border-rose-400', 'bg-rose-950/30', 'text-rose-200');
-        selectedTriggerReason = btn.dataset.reason;
+        desc: 'Trocou fissura por 200ml de água',
+        time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       });
-    });
+      saveState();
+      renderUI();
+    }
 
-    btnRelapse.addEventListener('click', () => {
-      // Pré-seleciona a primeira opção
-      if (triggerButtons[0]) {
-        triggerButtons[0].click();
+    function openSlipModal() {
+      document.getElementById('slipModal').classList.remove('hidden');
+    }
+
+    function closeSlipModal() {
+      document.getElementById('slipModal').classList.add('hidden');
+    }
+
+    function selectTrigger(name) {
+      selectedTrigger = name;
+    }
+
+    function confirmSlip() {
+      state.slips += 1;
+      if (document.getElementById('resetTimerCheck').checked) {
+        state.startTime = Date.now();
       }
-      modalRelapse.classList.remove('hidden');
-    });
-
-    btnCloseRelapse.addEventListener('click', () => modalRelapse.classList.add('hidden'));
-    btnCancelRelapse.addEventListener('click', () => modalRelapse.classList.add('hidden'));
-
-    btnConfirmRelapse.addEventListener('click', () => {
-      AppState.todaySlips = (AppState.todaySlips || 0) + 1;
-      AppState.totalSlips = (AppState.totalSlips || 0) + 1;
-
-      if (checkResetTimer.checked) {
-        AppState.quitDate = new Date().toISOString();
-        updateQuitTimer();
-      }
-
-      const newLog = {
-        id: 'log_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-        timestamp: new Date().toISOString(),
+      const now = new Date();
+      state.logs.push({
         type: 'slip',
-        note: selectedTriggerReason
-      };
-
-      AppState.logs.push(newLog);
+        desc: `Puxada (${selectedTrigger})`,
+        time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
       saveState();
-      updateUI();
-      modalRelapse.classList.add('hidden');
-
-      showToast("Registrado. Beba um copo d'água agora e continue firme!");
-    });
-
-    function triggerBubbleAnimation() {
-      // Efeito de onda no botão
-      btnRipple.classList.remove('opacity-0', 'scale-100');
-      btnRipple.classList.add('opacity-100', 'scale-125');
-      setTimeout(() => {
-        btnRipple.classList.remove('opacity-100', 'scale-125');
-        btnRipple.classList.add('opacity-0', 'scale-100');
-      }, 500);
-
-      // Criar 5 bolhinhas flutuantes ao redor do botão
-      const rect = btnDrink.getBoundingClientRect();
-      for (let i = 0; i < 6; i++) {
-        const bubble = document.createElement('div');
-        bubble.className = 'water-bubble';
-        const size = Math.random() * 16 + 10;
-        bubble.style.width = `${size}px`;
-        bubble.style.height = `${size}px`;
-        
-        // Posição aleatória na largura do botão
-        const randomX = Math.random() * (rect.width - 40) + 20;
-        const randomY = Math.random() * (rect.height - 40) + 20;
-        bubble.style.left = `${randomX}px`;
-        bubble.style.top = `${randomY}px`;
-
-        btnDrink.appendChild(bubble);
-        setTimeout(() => bubble.remove(), 1200);
-      }
+      renderUI();
+      closeSlipModal();
     }
 
-    btnDrink.addEventListener('click', () => {
-      registerWaterDrink();
-    });
-
-    // --- MODO SOS FISSURA (3 MINUTOS) & GUIA DE RESPIRAÇÃO (4-7-8 Adaptado) ---
-    let sosInterval = null;
-    let breathInterval = null;
-    let totalSosSeconds = 180; // 3 minutos
-
-    // Fases da respiração: Inspirar (4s), Segurar (4s), Expirar (4s), Beba Água (4s)
-    const breathPhases = [
-      { name: 'Inspirar', duration: 4, scale: 'scale-125', text: 'Puxe o ar suavemente pelo nariz...', tip: 'Encha os pulmões de ar puro, não de vapor.' },
-      { name: 'Segurar', duration: 4, scale: 'scale-125', text: 'Segure o ar calmamente...', tip: 'Sinta o controle do seu corpo sobre o impulso.' },
-      { name: 'Expirar', duration: 4, scale: 'scale-90', text: 'Solte todo o ar devagar pela boca...', tip: 'Solte a tensão nos ombros e mandíbula.' },
-      { name: 'Gole d\'Água', duration: 4, scale: 'scale-100', text: 'Dê 1 gole fundo na sua garrafa...', tip: 'Oculpe o hábito mecânico com hidratação.' }
-    ];
-
-    let currentPhaseIndex = 0;
-    let currentPhaseSecondsLeft = 4;
-
-    function openSOSModal() {
-      modalSOS.classList.remove('hidden');
-      totalSosSeconds = 180;
-      currentPhaseIndex = 0;
-      currentPhaseSecondsLeft = breathPhases[0].duration;
-      applyBreathPhase(breathPhases[0]);
-      SoundEngine.playBreathBell();
-
-      // Inicia contador decrescente geral dos 3 minutos
-      updateSosCountdownDisplay();
-      clearInterval(sosInterval);
-      sosInterval = setInterval(() => {
-        totalSosSeconds--;
-        updateSosCountdownDisplay();
-        if (totalSosSeconds <= 0) {
-          finishSOS(true);
-        }
-      }, 1000);
-
-      // Inicia ciclo de respiração
-      clearInterval(breathInterval);
-      breathInterval = setInterval(breathCycleTick, 1000);
-    }
-
-    function closeSOSModal() {
-      clearInterval(sosInterval);
-      clearInterval(breathInterval);
-      modalSOS.classList.add('hidden');
-    }
-
-    function breathCycleTick() {
-      currentPhaseSecondsLeft--;
-      breathTimerNum.textContent = `${currentPhaseSecondsLeft}s`;
-
-      if (currentPhaseSecondsLeft <= 0) {
-        currentPhaseIndex = (currentPhaseIndex + 1) % breathPhases.length;
-        const nextPhase = breathPhases[currentPhaseIndex];
-        currentPhaseSecondsLeft = nextPhase.duration;
-        applyBreathPhase(nextPhase);
-        SoundEngine.playBreathBell();
-      }
-    }
-
-    function applyBreathPhase(phase) {
-      breathPhaseText.textContent = phase.name;
-      breathTimerNum.textContent = `${phase.duration}s`;
-      breathTip.textContent = phase.tip;
-
-      // Reset de classes de escala
-      breathRing.classList.remove('scale-125', 'scale-90', 'scale-100');
-      breathRing.classList.add(phase.scale);
-
-      if (phase.name === "Gole d'Água") {
-        breathRing.classList.add('border-emerald-400');
-        breathRing.classList.remove('border-cyan-400/40');
-      } else {
-        breathRing.classList.remove('border-emerald-400');
-        breathRing.classList.add('border-cyan-400/40');
-      }
-    }
-
-    function updateSosCountdownDisplay() {
-      const m = Math.floor(totalSosSeconds / 60).toString().padStart(2, '0');
-      const s = (totalSosSeconds % 60).toString().padStart(2, '0');
-      sosCountdown.textContent = `${m}:${s}`;
-    }
-
-    function finishSOS(autoCompleted = false) {
-      closeSOSModal();
-      registerWaterDrink(200);
-      showToast(autoCompleted ? "Você superou a onda dos 3 minutos! Parabéns! 💧" : "Fissura contornada com sucesso! +200ml de água");
-    }
-
-    btnOpenSOS.addEventListener('click', openSOSModal);
-    btnCloseSOS.addEventListener('click', closeSOSModal);
-    btnFinishSOS.addEventListener('click', () => finishSOS(false));
-
-    // --- CONFIGURAÇÕES & MODAL ---
-    btnSettings.addEventListener('click', () => {
-      // Preenche os campos atuais
-      const d = new Date(AppState.quitDate);
-      // Formata para input datetime-local
-      const localIso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-      inputQuitDate.value = localIso;
-      inputDailyWater.value = AppState.dailyWaterTarget;
-      inputDrinkSize.value = AppState.drinkSize;
-      inputVapeCost.value = AppState.monthlyCost;
-
-      modalSettings.classList.remove('hidden');
-    });
-
-    btnCloseSettings.addEventListener('click', () => {
-      modalSettings.classList.add('hidden');
-    });
-
-    settingsForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      if (inputQuitDate.value) {
-        AppState.quitDate = new Date(inputQuitDate.value).toISOString();
-      }
-      AppState.dailyWaterTarget = parseInt(inputDailyWater.value) || 2500;
-      AppState.drinkSize = parseInt(inputDrinkSize.value) || 200;
-      AppState.monthlyCost = parseFloat(inputVapeCost.value) || 200;
-
-      saveState();
-      updateUI();
-      modalSettings.classList.add('hidden');
-      showToast("Configurações atualizadas com sucesso!");
-    });
-
-    btnResetTimer.addEventListener('click', () => {
-      if (window.confirm("Deseja reiniciar a data do cronômetro para agora?")) {
-        AppState.quitDate = new Date().toISOString();
+    function resetDataPrompt() {
+      if (confirm('Deseja repor todos os registos?')) {
+        localStorage.removeItem(STORAGE_KEY);
+        state = {
+          startTime: Date.now(),
+          waterTotal: 0,
+          cravingsSaved: 0,
+          slips: 0,
+          logs: []
+        };
         saveState();
-        updateQuitTimer();
-        showToast("Novo ponto de partida definido! Firme no propósito.");
+        renderUI();
       }
-    });
-
-    btnExportData.addEventListener('click', () => {
-      if (window.confirm("Deseja zerar os registros de hoje? O histórico total continuará seguro.")) {
-        AppState.todayWater = 0;
-        AppState.todayCravings = 0;
-        const today = new Date().toDateString();
-        AppState.logs = AppState.logs.filter(l => new Date(l.timestamp).toDateString() !== today);
-        saveState();
-        updateUI();
-        modalSettings.classList.add('hidden');
-        showToast("Registros do dia zerados.");
-      }
-    });
-
-    // --- SISTEMA DE TOAST NOTIFICATION ---
-    let toastTimeout = null;
-    function showToast(msg) {
-      toastMsg.textContent = msg;
-      toastNotification.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
-      toastNotification.classList.add('opacity-100', 'translate-y-0');
-
-      clearTimeout(toastTimeout);
-      toastTimeout = setTimeout(() => {
-        toastNotification.classList.remove('opacity-100', 'translate-y-0');
-        toastNotification.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
-      }, 3000);
     }
 
-    // --- INICIALIZAÇÃO NO CARREGAMENTO ---
-    window.addEventListener('DOMContentLoaded', () => {
-      loadState();
-      updateUI();
-      updateQuitTimer();
-    });
+    function updateTimer() {
+      const diff = Math.floor((Date.now() - state.startTime) / 1000);
+      const days = Math.floor(diff / 86400);
+      const hours = Math.floor((diff % 86400) / 3600);
+      const mins = Math.floor((diff % 3600) / 60);
+      const secs = diff % 60;
+      const pad = n => String(n).padStart(2, '0');
+      document.getElementById('cleanTimer').textContent = `${days}d ${hours}h ${pad(mins)}m ${pad(secs)}s`;
+    }
+
+    checkStorageSupport();
+    loadState();
+    setInterval(updateTimer, 1000);
+    updateTimer();
   </script>
 </body>
 </html>
